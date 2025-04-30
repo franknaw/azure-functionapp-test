@@ -1,0 +1,63 @@
+name: "Deploy to Function App"
+
+env:
+  APP_NAME: dfgdfg
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
+  PYTHON_VERSION: '3.12'
+  IS_SLOT: ${{ secrets.SLOT }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      env_select:
+        type: choice
+        description: Select Environment
+        options:
+          - dev
+          - test
+
+jobs:
+  build-and-deploy:
+    runs-on: [ ubuntu-latest ]
+    environment:
+      name: ${{ github.event.inputs.env_select }}
+    steps:
+      - name: Echo Context
+        run: |
+          echo "ENV: ${{ github.event.inputs.env_select }}"
+
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt --target=".python_packages/lib/site-packages"        
+
+      - name: 'Deploy Azure Function - MAIN'
+        if: ${{ env.IS_SLOT == '' }}
+        uses: azure/functions-action@v1.5.1
+        id: no-slot
+        with:
+          app-name: ${{ env.APP_NAME }}
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true
+
+      - name: 'Deploy Azure Function - SLOT'
+        if: ${{ env.IS_SLOT != '' }}
+        uses: azure/functions-action@v1.5.1
+        id: slot
+        with:
+          slot-name: ${{ secrets.SLOT }}
+          app-name: ${{ env.APP_NAME }}
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true
