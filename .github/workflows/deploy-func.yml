@@ -41,13 +41,13 @@ jobs:
 
       - name: 'Deploy Azure Function - MAIN'
         if: ${{ env.IS_SLOT == '' }}
-        uses: azure/functions-action@v1.5.1
+        uses: azure/functions-action@v1.3.2
         id: no-slot
         with:
           app-name: ${{ env.APP_NAME }}
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-          scm-do-build-during-deployment: false
+          scm-do-build-during-deployment: true
           enable-oryx-build: true
 
       - name: 'Deploy Azure Function - SLOT'
