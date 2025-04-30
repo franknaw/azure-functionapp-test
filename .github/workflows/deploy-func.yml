@@ -1,7 +1,7 @@
 name: "Deploy to Function App"
 
 env:
-  APP_NAME: dfgdfg
+  APP_NAME: fnaw
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
   PYTHON_VERSION: '3.12'
   IS_SLOT: ${{ secrets.SLOT }}
